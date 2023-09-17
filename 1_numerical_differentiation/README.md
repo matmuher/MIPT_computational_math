@@ -22,7 +22,7 @@ And approximate their 1st derivatives with methods:
 
 ## Structure of computational error
 
-Computational error ~ `$h^{n} + \frac{Epsilon}{h}$`
+Computational error ~ $h^{n} + \frac{Epsilon}{h}$
 
 * $h^(n)$ part in general can be decreased by choosing methods that use more points (like method 4)
 
@@ -45,7 +45,7 @@ For mentioned functions we compute difference between analytically computed deri
 + at first error decreases with decrease of step size (h)
 + then error increases from some point in methods that use more points
 
-It happens because `$h^{n}$` part becomes small. So $\frac{Epsilon}{h}$ part becomes significant. And this part increases with decrease of step size.
+It happens because $h^{n}$ part becomes small. So $\frac{Epsilon}{h}$ part becomes significant. And this part increases with decrease of step size.
 
 That's why we see this extremes in methods 1-4. In method 0 we don't see it as error of $h^{n}$ is much bigger than $\frac{Epsilon}{h}$ part.
 
