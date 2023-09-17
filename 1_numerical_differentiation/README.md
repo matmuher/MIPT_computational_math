@@ -6,7 +6,7 @@ In this lab we research computational errors of different formulas for function'
 
 We consider next functions:
 
-0) $ sin(x^2) $
+0) $sin(x^2)$
 1) $ cos(sin(x) $
 2) $ exp(sin(cos(x) $
 3) $ ln(x + 3) $ 
