@@ -31,7 +31,7 @@ Computational error ~ `$h^{n} + \frac{Epsilon}{h}$`
 
 ## Observations
 
-For mentioned functions we compute difference between analytically computed derivative and numerical computed derivative.
+For mentioned functions we compute difference between analytically computed derivative and numerical computed derivative in x = 1.5.
 
 ![](plots/cos(sin(x)).svg)
 ![](plots/exp(sin(cos(x))).svg)
