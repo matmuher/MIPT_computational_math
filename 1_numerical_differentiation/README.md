@@ -2,7 +2,23 @@
 
 ## Description
 
-In this lab we research computational errors of different formulas for function 1st derivative.
+In this lab we research computational errors of different formulas for function's 1st derivative.
+
+We consider next functions:
+
+0) $ sin(x^2) $
+1) $ cos(sin(x) $
+2) $ exp(sin(cos(x) $
+3) $ ln(x + 3) $ 
+4) $ (x + 3)^0.5 $
+
+And approximate their 1st derivatives with formulas:
+
+0) 
+1)
+2)
+3)
+4)
 
 ## Structure of computational error
 
@@ -11,6 +27,7 @@ Computational error ~ `h^(n) + Epsilon / h`
 * `h^(n)` part in general can be decreased by choosing methods that uses more points (like method 4)
 
 * `Epsilon / h` part is valuable when h is close to or less than Epsilon (machine zero)
+
 
 ## Observations
 
