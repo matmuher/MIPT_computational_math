@@ -7,18 +7,18 @@ In this lab we research computational errors of different formulas for function'
 We consider next functions:
 
 0) $sin(x^2)$
-1) $ cos(sin(x) $
-2) $ exp(sin(cos(x) $
-3) $ ln(x + 3) $ 
-4) $ (x + 3)^0.5 $
+1) $cos(sin(x)$
+2) $exp(sin(cos(x)$
+3) $ln(x + 3)$ 
+4) $(x + 3)^0.5$
 
-And approximate their 1st derivatives with formulas:
+And approximate their 1st derivatives with methods:
 
-0) 
-1)
-2)
-3)
-4)
+0) $\frac{f(x+h) - f(x)}{h}$
+1) $\frac{f(x) - f(x-h)}{h}$
+2) $\frac{f(x+h) - f(x-h)}{2h}$
+3) $\frac{4}{3}\frac{f(x+h) - f(x-h)}{2h} -\frac{1}{3}\frac{f(x+2h) - f(x-2h)}{4h}$
+4) $\frac{3}{2}\frac{f(x+h) - f(x-h)}{2h} -\frac{3}{5}\frac{f(x+2h) - f(x-2h)}{4h} + \frac{1}{10}\frac{f(x+3h) - f(x-3h)}{6h}$
 
 ## Structure of computational error
 
