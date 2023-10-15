@@ -4,6 +4,29 @@ from abc import ABC, abstractmethod
 
 '''
 
+	Reason for doing OOP:
+
+
+	Decrease amount of actions that need to be done to
+	add new method.
+
+	in: A, b
+
+	+ straight methods
+
+		* set the process itself
+
+	+ iterative methods
+
+		* configure the process of iteration
+
+	out: x
+
+'''
+
+
+'''
+
 Im gonna have next object in my program:
 
 	Different methods of solving system of linear equations
@@ -24,13 +47,64 @@ class LinearEqSystemSolver:
 
 	+ SolveWithUpperRelaxation
 
+Initially linear system is characterized by A and b.
+equs - it's interanl reprsentation of A & b.
+
 '''
 
-class LinearEqSystemSolver(ABC):
+class LinearSolver(ABC):
+
+
+	def __init__(self, A, b):
+
+		self.A = A
+		self.b = b
+
+
+	def concat_Ab():
+
+		return np.column_stack((self.A, self.b))
+
+
+	def unwind_triangle(equs):
+
+		rowN = np.shape(equs)[0]
+		columnN = np.shape(equs)[1]
+
+		FillerValue = -7
+		x = np.full(rowN, FillerValue, dtype = np.float64)
+
+		for equ_index in range(rowN-1, -1, -1):
+
+			consider_computed_x = 0
+
+			for x_index in range(equ_index + 1, rowN):
+
+				consider_computed_x += x[x_index] * equs[equ_index][x_index]
+
+			x[equ_index] = (equs[equ_index][-1] - consider_computed_x) / equs[equ_index][equ_index]
+
+		return x
+
+	def swap_rows(equs, i, j):
+
+		equs[[i, j]] = equs[[j, i]]
+
+
+	def print_matrix(matrix):
+
+		for i in range(0, np.shape(matrix)[0]):
+
+			for j in range(0, np.shape(matrix)[1]):
+
+				print(f'\t{matrix[i][j]:.2}', end = ' ')
+
+			print('\n')
 
 	@abstractmethod
-	def solve(self, A, b):
+	def solve(self):
 		pass
+
 
 '''
 
@@ -41,45 +115,30 @@ class LinearEqSystemSolver(ABC):
 
 '''
 
-def unwind_triangle(equs):
+class GaussianSolver(LinearSolver):
 
-	rowN = np.shape(equs)[0]
-	columnN = np.shape(equs)[1]
+	def solve(self):
 
-	FillerValue = -7
-	x = np.full(rowN, FillerValue, dtype = np.float64)
-
-	for equ_index in range(rowN-1, -1, -1):
-
-		print(equ_index)
-
-		consider_computed_x = 0
-
-		for x_index in range(equ_index + 1, rowN):
-
-			consider_computed_x += x[x_index] * equs[equ_index][x_index]
-			# print(x[x_index])
-			# print(equs[equ_index][x_index])
-
-		print(consider_computed_x)
-		print(equs[equ_index][-1])
-		print(equs[equ_index][equ_index])
-
-		x[equ_index] = (equs[equ_index][-1] - consider_computed_x) / equs[equ_index][equ_index]
-
-	return x
-
-class GaussianSolver(LinearEqSystemSolver):
-
-	def solve(self, A, b):
-
-		equs = np.column_stack((A, b))
-
+		equs = LinearSolver.concat_Ab()
+		
 		N = np.shape(equs)[0]
+
+		# Прямой ход алгоритма Гаусса
 
 		for exluder_equ_index in range(0, N-1):
 
 			exluder_equ = equs[exluder_equ_index]
+
+			# find element to maxmize value in denominator
+
+			for current_equ_index in range(exluder_equ_index,  N):
+
+				current_equ = equs[current_equ_index] 
+
+				if current_equ[exluder_equ_index] > exluder_equ[exluder_equ_index]:
+
+					print(f'Swap happend: exlude index: {exluder_equ_index} {current_equ_index}')
+					swap_rows(equs, exluder_equ_index, current_equ_index)
 
 			for current_equ_index in range(exluder_equ_index + 1,  N):
 
@@ -94,21 +153,11 @@ class GaussianSolver(LinearEqSystemSolver):
 
 		print_matrix(equs)
 
+		# Обратный ход
+
 		x = unwind_triangle(equs)
 
-		print(f'x = {x}')
-		print(A.dot(x))
-		print(b)
-
-def print_matrix(matrix):
-
-	for i in range(0, np.shape(matrix)[0]):
-
-		for j in range(0, np.shape(matrix)[1]):
-
-			print(f'\t{matrix[i][j]:.2}', end = ' ')
-
-		print('\n')
+		return x
 
 # Create matrix from the task: y
 
@@ -132,13 +181,50 @@ def construct_task_matrix():
 
 		b[i-1] = 1/(i)
 
-	print(f'det(A) = {np.linalg.det(A)}')
+	# print(f'det(A) = {np.linalg.det(A)}')
 
 	return A, b
+
+def LU_decomposition(A):
+
+	N = np.shape(A)[0]
+
+	L = np.copy(A)
+	U = np.copy(A)
+
+	for i in range(0, N):
+
+		for j in range(0, N):
+
+			L[i][j] = 0
+			U[i][j] = 0
+
+			if i == j:
+
+				L[i][j] = 1
+
+
+	for i in range(0, N):
+
+		for j in range(0, N):
+
+			if i <= j:
+
+				U[i][j] = A[i][j] - np.dot(L[i], U.T[j])
+
+			else:
+
+				L[i][j] = (A[i][j] - np.dot(L[i], U.T[j])) / U[j][j]
+
+	LinearSolver.print_matrix(A - np.matmul(L, U))
 
 if __name__ == '__main__':
 
 	A, b = construct_task_matrix()
 
-	solver = GaussianSolver()
-	solver.solve(A, b)
+	LU_decomposition(A)
+
+	# solver = GaussianSolver(A, b)
+	# x = solver.solve()
+
+	# print(f'solution is {x}')
