@@ -1,4 +1,6 @@
 import numpy as np
+from numpy import linalg as LA
+
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
 
@@ -55,18 +57,18 @@ equs - it's interanl reprsentation of A & b.
 class LinearSolver(ABC):
 
 
-	def __init__(self, A, b):
+	def __init__(self, name, A, b):
 
+		self.name = name
 		self.A = A
 		self.b = b
 
+	def concat(A, b):
 
-	def concat_Ab():
-
-		return np.column_stack((self.A, self.b))
+		return np.column_stack((A, b))
 
 
-	def unwind_triangle(equs):
+	def unwind_U(equs):
 
 		rowN = np.shape(equs)[0]
 		columnN = np.shape(equs)[1]
@@ -79,6 +81,27 @@ class LinearSolver(ABC):
 			consider_computed_x = 0
 
 			for x_index in range(equ_index + 1, rowN):
+
+				consider_computed_x += x[x_index] * equs[equ_index][x_index]
+
+			x[equ_index] = (equs[equ_index][-1] - consider_computed_x) / equs[equ_index][equ_index]
+
+		return x
+
+
+	def unwind_L(equs):
+
+		rowN = np.shape(equs)[0]
+		columnN = np.shape(equs)[1]
+
+		FillerValue = -7
+		x = np.full(rowN, FillerValue, dtype = np.float64)
+
+		for equ_index in range(0, rowN, 1):
+
+			consider_computed_x = 0
+
+			for x_index in range(0, equ_index):
 
 				consider_computed_x += x[x_index] * equs[equ_index][x_index]
 
@@ -105,6 +128,10 @@ class LinearSolver(ABC):
 	def solve(self):
 		pass
 
+	def print_residual(self, x):
+
+		residual = self.A.dot(x) - self.b
+		print(f'[{self.name}] residual is {LA.norm(residual)}')
 
 '''
 
@@ -117,9 +144,13 @@ class LinearSolver(ABC):
 
 class GaussianSolver(LinearSolver):
 
+	def __init__(self, A, b):
+
+		LinearSolver.__init__(self, 'Gauss', A, b)
+
 	def solve(self):
 
-		equs = LinearSolver.concat_Ab()
+		equs = LinearSolver.concat(self.A, self.b)
 		
 		N = np.shape(equs)[0]
 
@@ -137,7 +168,6 @@ class GaussianSolver(LinearSolver):
 
 				if current_equ[exluder_equ_index] > exluder_equ[exluder_equ_index]:
 
-					print(f'Swap happend: exlude index: {exluder_equ_index} {current_equ_index}')
 					swap_rows(equs, exluder_equ_index, current_equ_index)
 
 			for current_equ_index in range(exluder_equ_index + 1,  N):
@@ -151,11 +181,69 @@ class GaussianSolver(LinearSolver):
 				mutiplier = - current_equ[exluder_equ_index] / exluder_equ[exluder_equ_index]
 				current_equ += exluder_equ * mutiplier
 
-		print_matrix(equs)
-
 		# Обратный ход
 
-		x = unwind_triangle(equs)
+		x = LinearSolver.unwind_U(equs)
+
+		return x
+
+'''
+
+Ax = LUx = b
+
+Ux = y
+
+Ly = b -> unwind_L
+
+Ux = y -> unwind_U
+
+'''
+
+class LUSolver(LinearSolver):
+
+	def __init__(self, A, b):
+
+		LinearSolver.__init__(self, 'LU decomposition', A, b)
+
+	def LU_decomposition(self):
+
+		N = np.shape(self.A)[0]
+
+		L = np.copy(self.A)
+		U = np.copy(self.A)
+
+		for i in range(0, N):
+
+			for j in range(0, N):
+
+				L[i][j] = 0
+				U[i][j] = 0
+
+				if i == j:
+
+					L[i][j] = 1
+
+
+		for i in range(0, N):
+
+			for j in range(0, N):
+
+				if i <= j:
+
+					U[i][j] = self.A[i][j] - np.dot(L[i], U.T[j])
+
+				else:
+
+					L[i][j] = (self.A[i][j] - np.dot(L[i], U.T[j])) / U[j][j]
+
+		return L, U
+
+	def solve(self):
+
+		L, U = LUSolver.LU_decomposition(self)
+
+		y = LinearSolver.unwind_L(LinearSolver.concat(L, self.b))
+		x = LinearSolver.unwind_U(LinearSolver.concat(U, y))
 
 		return x
 
@@ -185,46 +273,12 @@ def construct_task_matrix():
 
 	return A, b
 
-def LU_decomposition(A):
-
-	N = np.shape(A)[0]
-
-	L = np.copy(A)
-	U = np.copy(A)
-
-	for i in range(0, N):
-
-		for j in range(0, N):
-
-			L[i][j] = 0
-			U[i][j] = 0
-
-			if i == j:
-
-				L[i][j] = 1
-
-
-	for i in range(0, N):
-
-		for j in range(0, N):
-
-			if i <= j:
-
-				U[i][j] = A[i][j] - np.dot(L[i], U.T[j])
-
-			else:
-
-				L[i][j] = (A[i][j] - np.dot(L[i], U.T[j])) / U[j][j]
-
-	LinearSolver.print_matrix(A - np.matmul(L, U))
-
 if __name__ == '__main__':
 
 	A, b = construct_task_matrix()
 
-	LU_decomposition(A)
+	straight_solvers = [LUSolver(A, b), GaussianSolver(A, b)] 
 
-	# solver = GaussianSolver(A, b)
-	# x = solver.solve()
-
-	# print(f'solution is {x}')
+	for solver in straight_solvers:
+		
+		solver.print_residual(solver.solve())
