@@ -4,56 +4,6 @@ from numpy import linalg as LA
 import matplotlib.pyplot as plt
 from abc import ABC, abstractmethod
 
-'''
-
-	Reason for doing OOP:
-
-
-	Decrease amount of actions that need to be done to
-	add new method.
-
-	in: A, b
-
-	+ straight methods
-
-		* set the process itself
-
-	+ iterative methods
-
-		* configure the process of iteration
-
-	out: x
-
-'''
-
-
-'''
-
-Im gonna have next object in my program:
-
-	Different methods of solving system of linear equations
-
-	Information that characterize concrete СЛАУ
-
-class LinearEqSystemSolver:
-
-	+ __init__ (A, b)
-
-	+ SolveWithGaussian
-
-	+ SolveWithLU
-
-	+ SolveWithZeidel
-
-	+ SolveWithJacoby
-
-	+ SolveWithUpperRelaxation
-
-Initially linear system is characterized by A and b.
-equs - it's interanl reprsentation of A & b.
-
-'''
-
 class LinearSolver(ABC):
 
 
