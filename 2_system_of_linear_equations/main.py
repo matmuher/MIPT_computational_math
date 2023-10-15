@@ -128,10 +128,14 @@ class LinearSolver(ABC):
 	def solve(self):
 		pass
 
+	def compute_residual(x, A, b):
+
+		return LA.norm(A.dot(x) - b)
+
 	def print_residual(self, x):
 
-		residual = self.A.dot(x) - self.b
-		print(f'[{self.name}] residual is {LA.norm(residual)}')
+		residual = LinearSolver.compute_residual(x, self.A, self.b)
+		print(f'[{self.name}] residual is {residual}')
 
 '''
 
@@ -247,6 +251,111 @@ class LUSolver(LinearSolver):
 
 		return x
 
+
+class IterativeSolver(LinearSolver):
+
+	count = 0
+	ax = plt.gca()
+
+
+	ax.set_yscale('log')
+
+	ax.set_ylabel('Residual')
+	ax.set_xlabel('Iteration number')
+
+	ax.set_title(f'Residuals for iterative methods of solving linear systems')
+
+
+	def __init__(self, name, A, b, B, F):
+
+		LinearSolver.__init__(self, name, A, b)
+
+		self.B = B
+		self.F = F
+		self.Id = IterativeSolver.count
+
+		IterativeSolver.count += 1
+
+	def solve(self, x0, N):
+
+		x_prev = x0
+
+		residual_list = []
+
+		for i in range(N):
+
+			x = self.F + self.B.dot(x_prev)
+			x_prev = x
+
+			residual_list.append(LinearSolver.compute_residual(x, self.A, self.b))
+
+		iteration_list = np.arange(N)
+
+		IterativeSolver.ax.plot(iteration_list, residual_list, label = f'{self.name} method')
+
+'''
+
+https://en.wikipedia.org/wiki/Jacobi_method
+
+'''
+
+class JacobiMethod(IterativeSolver):
+
+	def __init__(self, A, b):
+
+		U = np.triu(A, k = 1)
+		L = np.tril(A, k = -1)
+		D = np.diag(np.diag(A))
+
+		D_inv = LA.inv(D)
+
+		B = -np.matmul(D_inv, L + U)
+		F = D_inv.dot(b)
+
+		IterativeSolver.__init__(self, 'Jacobi', A, b, B, F)
+
+'''
+
+https://en.wikipedia.org/wiki/Gauss%E2%80%93Seidel_method
+
+'''
+
+class SeidelMethod(IterativeSolver):
+
+	def __init__(self, A, b):
+
+		U = np.triu(A, k = 1)
+		LD = np.tril(A, k = 0) # L + D
+
+		LD_inv = LA.inv(LD)
+
+		B = -np.matmul(LD_inv, U)
+		F = LD_inv.dot(b)
+
+		IterativeSolver.__init__(self, 'Seidel', A, b, B, F)
+
+
+'''
+
+https://en.wikipedia.org/wiki/Successive_over-relaxation
+
+'''
+
+class SORMethod(IterativeSolver):
+
+	def __init__(self, A, b, w):
+
+		U = np.triu(A, k = 1)
+		L = np.tril(A, k = -1)
+		D = np.diag(np.diag(A))
+
+		B = -np.matmul(LA.inv(D + w*L), (w-1)*D + w*U)
+		F = w * LA.inv(D + L*w).dot(b)
+
+		IterativeSolver.__init__(self, f'SOR {w}', A, b, B, F)
+
+
+
 # Create matrix from the task: y
 
 def construct_task_matrix():
@@ -277,8 +386,28 @@ if __name__ == '__main__':
 
 	A, b = construct_task_matrix()
 
+	print('task matrix:')
+	LinearSolver.print_matrix(LinearSolver.concat(A, b))
+
 	straight_solvers = [LUSolver(A, b), GaussianSolver(A, b)] 
 
 	for solver in straight_solvers:
 		
 		solver.print_residual(solver.solve())
+
+	iterative_solvers = [
+						SeidelMethod(A, b),
+						JacobiMethod(A, b),
+						SORMethod(A, b, 1.2),
+						SORMethod(A, b, 1.5)
+						]
+
+	N = 80
+
+	for solver in iterative_solvers:
+
+		solver.solve(b, N)
+
+	IterativeSolver.ax.legend()
+
+	plt.savefig(f'methods_cmp.svg')
